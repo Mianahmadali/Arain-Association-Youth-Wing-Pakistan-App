@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/arain_association
+      - DATABASE_NAME=arain_association
+      - SECRET_KEY=your-super-secret-jwt-key-change-this-in-production
+      - DEBUG=True
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - mongo
+    networks:
+      - arain-network
+
+  mongo:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - arain-network
+
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+    depends_on:
+      - mongo
+    networks:
+      - arain-network
+
+volumes:
+  mongo_data:
+
+networks:
+  arain-network:
+    driver: bridge
