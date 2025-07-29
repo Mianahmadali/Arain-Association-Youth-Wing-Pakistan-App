@@ -4,7 +4,9 @@ import {
   MessageOutlined, 
   SendOutlined, 
   CloseOutlined,
-  RobotOutlined
+  RobotOutlined,
+  ThunderboltOutlined,
+  BulbOutlined
 } from '@ant-design/icons';
 import { Input, Button, Badge, Tag } from 'antd';
 import { chatWithAI } from '../apiService';
@@ -64,10 +66,29 @@ setIsTyping(true);
       <Button 
         className="chatbot-toggle"
         onClick={toggleChatbot}
-        title={visible ? 'Close Chat' : 'Open Chat Assistant'}
+        title={visible ? 'Close Chat' : 'Open AI Assistant 🤖'}
+        style={{
+          background: visible ? '#ff4d4f' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          border: 'none',
+          borderRadius: '50%',
+          width: '60px',
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: visible ? '0 4px 15px rgba(255, 77, 79, 0.4)' : '0 4px 15px rgba(102, 126, 234, 0.4)',
+          transition: 'all 0.3s ease'
+        }}
       >
-        <Badge dot={!visible} offset={[-6, 6]}>
-          {visible ? <CloseOutlined /> : <RobotOutlined />}
+        <Badge dot={!visible} offset={[-8, 8]}>
+          {visible ? (
+            <CloseOutlined style={{ fontSize: '20px', color: 'white' }} />
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <ThunderboltOutlined style={{ fontSize: '18px', color: 'white' }} />
+              <span style={{ fontSize: '16px', color: 'white' }}>🤖</span>
+            </div>
+          )}
         </Badge>
       </Button>
 
@@ -75,8 +96,11 @@ setIsTyping(true);
         <div className="chatbot-window fade-in">
           <div className="chatbot-header">
             <div className="d-flex align-items-center">
-              <RobotOutlined className="me-2" />
-              <span>AI Assistant</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BulbOutlined className="me-1" style={{ fontSize: '18px', color: '#667eea' }} />
+                <span style={{ fontSize: '16px' }}>🤖</span>
+                <span style={{ fontWeight: '600', color: 'white' }}>AI Assistant</span>
+              </div>
             </div>
             <CloseOutlined 
               onClick={toggleChatbot} 
@@ -138,8 +162,9 @@ setIsTyping(true);
                 onClick={sendMessage}
                 disabled={!message.trim()}
                 className="btn-primary-custom"
+                style={{ color: 'white' }}
               >
-                {t('send')}
+                🤖 {t('send')}
               </Button>
             </div>
           </div>

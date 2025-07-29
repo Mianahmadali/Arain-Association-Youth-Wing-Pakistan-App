@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { 
   Form, 
   Input, 
+  InputNumber, 
   Button, 
   Select, 
   DatePicker, 
@@ -17,11 +18,13 @@ import {
 import { UploadOutlined, CheckOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import { submitDirectoryRegistration } from '../apiService';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 
 const { Option } = Select;
 const { TextArea } = Input;
 
-const DirectoryRegistration = () => {
+const DirectoryRegistration = ({ language = 'en', setLanguage = () => {} }) => {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
@@ -57,9 +60,16 @@ const DirectoryRegistration = () => {
   ];
 
   const membershipTypes = [
-    'Member',
-    'Donor',
-    'Volunteer'
+    { label: 'Member', value: 'member' },
+    { label: 'Donor', value: 'donor' },
+    { label: 'Volunteer', value: 'volunteer' }
+  ];
+
+  const maritalStatuses = [
+    { label: 'Single', value: 'single' },
+    { label: 'Married', value: 'married' },
+    { label: 'Divorced', value: 'divorced' },
+    { label: 'Widowed', value: 'widowed' }
   ];
 
   const handleNext = async () => {
@@ -80,9 +90,46 @@ const DirectoryRegistration = () => {
     try {
       const values = await form.validateFields();
       const finalData = { ...formData, ...values };
-      console.log('Final form data:', finalData);
       
-      const result = await submitDirectoryRegistration(finalData);
+      // Format the data properly for API with validation - match backend field names
+      const formattedData = {
+        full_name: finalData.name?.trim() || '',
+        cnic: finalData.cnic?.trim() || '',
+        dob: finalData.dob ? finalData.dob.format('YYYY-MM-DD') : null,
+        gender: finalData.gender || '',
+        father_name: finalData.fatherHusbandName?.trim() || '',
+        qualification: finalData.education || '',
+        profession: finalData.occupation?.trim() || '',
+        phone: finalData.phone?.trim() || '',
+        whatsapp: finalData.whatsapp?.trim() || null,
+        email: finalData.email?.trim() || '',
+        province: finalData.province || '',
+        district: finalData.district?.trim() || '',
+        tehsil: finalData.tehsil?.trim() || '',
+        union_council: finalData.unionCouncil?.trim() || null,
+        address: finalData.address?.trim() || '',
+        city: finalData.district?.trim() || '', // Use district as city
+        caste: finalData.caste?.trim() || null,
+        marital_status: finalData.maritalStatus || 'single', // Default to single if not provided
+        membership_type: finalData.membershipType || '',
+        remarks: finalData.remarks?.trim() || null,
+        profile_photo: finalData.profilePhoto || null,
+        family_members_count: finalData.familyMembersCount || 1 // Default to 1 if not provided
+      };
+      
+      // Remove null and empty string values for optional fields
+      Object.keys(formattedData).forEach(key => {
+        if (formattedData[key] === null || formattedData[key] === '') {
+          if (['whatsapp', 'union_council', 'caste', 'remarks', 'profile_photo', 'dob'].includes(key)) {
+            delete formattedData[key];
+          }
+        }
+      });
+      
+      console.log('Formatted form data:', formattedData);
+      
+      const result = await submitDirectoryRegistration(formattedData);
+      
       if (result.success) {
         message.success('Registration submitted successfully!');
         // Reset form and go back to first step
@@ -90,11 +137,37 @@ const DirectoryRegistration = () => {
         setFormData({});
         setCurrentStep(0);
       } else {
-        message.error('Registration failed. Please try again.');
+        console.error('Registration failed:', result.error);
+        console.error('Full error response:', result);
+        
+        if (result.status === 422) {
+          // Try to extract specific error messages
+          let errorMessage = 'Please check all required fields and try again.';
+          
+          if (result.error && typeof result.error === 'object') {
+            if (result.error.detail) {
+              if (Array.isArray(result.error.detail)) {
+                errorMessage = result.error.detail.map(err => `${err.loc?.[1] || 'Field'}: ${err.msg}`).join(', ');
+              } else {
+                errorMessage = result.error.detail;
+              }
+            } else if (result.error.message) {
+              errorMessage = result.error.message;
+            }
+          }
+          
+          message.error(`Validation Error: ${errorMessage}`);
+        } else {
+          message.error(`Registration failed (${result.status}): ${result.error?.message || 'Unknown error'}`);
+        }
       }
     } catch (error) {
       console.error('Registration submission error:', error);
-      message.error('Registration failed. Please try again.');
+      if (error.response && error.response.status === 422) {
+        message.error('Please check all required fields and try again.');
+      } else {
+        message.error('Registration failed. Please try again.');
+      }
     }
   };
 
@@ -114,7 +187,7 @@ const DirectoryRegistration = () => {
                   label={t('name')}
                   rules={[{ required: true, message: 'Please enter your full name' }]}
                 >
-                  <Input placeholder="Enter your full name" className="form-control-custom" />
+                  <Input placeholder="Enter your full name" className="form-control-custom" autoComplete="name" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -126,7 +199,7 @@ const DirectoryRegistration = () => {
                     { pattern: /^\d{5}-\d{7}-\d{1}$/, message: 'Please enter valid CNIC format (12345-1234567-1)' }
                   ]}
                 >
-                  <Input placeholder="12345-1234567-1" className="form-control-custom" />
+                  <Input placeholder="12345-1234567-1" className="form-control-custom" autoComplete="off" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -154,13 +227,31 @@ const DirectoryRegistration = () => {
                   </Radio.Group>
                 </Form.Item>
               </Col>
-              <Col xs={24}>
+              <Col xs={24} md={12}>
                 <Form.Item
                   name="fatherHusbandName"
                   label={t('fatherHusbandName')}
                   rules={[{ required: true, message: 'Please enter father/husband name' }]}
                 >
-                  <Input placeholder="Enter father/husband name" className="form-control-custom" />
+                  <Input placeholder="Enter father/husband name" className="form-control-custom" autoComplete="additional-name" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="familyMembersCount"
+                  label="Number of Family Members"
+                  rules={[
+                    { required: true, message: 'Please enter the number of family members' },
+                    { type: 'number', min: 1, max: 50, message: 'Please enter a valid number between 1 and 50' }
+                  ]}
+                >
+                  <InputNumber 
+                    placeholder="Enter number of family members" 
+                    className="form-control-custom" 
+                    style={{ width: '100%' }}
+                    min={1}
+                    max={50}
+                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -181,7 +272,12 @@ const DirectoryRegistration = () => {
                   label={t('education')}
                   rules={[{ required: true, message: 'Please enter your education' }]}
                 >
-                  <Select placeholder="Select education level" className="form-control-custom">
+                <Select 
+                    placeholder="Select education level" 
+                    className="form-control-custom"
+                    dropdownStyle={{ zIndex: 9999 }}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                  >
                     <Option value="primary">Primary</Option>
                     <Option value="secondary">Secondary</Option>
                     <Option value="intermediate">Intermediate</Option>
@@ -197,7 +293,7 @@ const DirectoryRegistration = () => {
                   label={t('occupation')}
                   rules={[{ required: true, message: 'Please enter your occupation' }]}
                 >
-                  <Input placeholder="Enter your occupation" className="form-control-custom" />
+                  <Input placeholder="Enter your occupation" className="form-control-custom" autoComplete="organization-title" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -209,7 +305,7 @@ const DirectoryRegistration = () => {
                     { pattern: /^\+92\d{10}$/, message: 'Please enter valid phone format (+92XXXXXXXXXX)' }
                   ]}
                 >
-                  <Input placeholder="+92XXXXXXXXXX" className="form-control-custom" />
+                  <Input placeholder="+92XXXXXXXXXX" className="form-control-custom" autoComplete="tel" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -220,7 +316,7 @@ const DirectoryRegistration = () => {
                     { pattern: /^\+92\d{10}$/, message: 'Please enter valid WhatsApp format (+92XXXXXXXXXX)' }
                   ]}
                 >
-                  <Input placeholder="+92XXXXXXXXXX" className="form-control-custom" />
+                  <Input placeholder="+92XXXXXXXXXX" className="form-control-custom" autoComplete="tel" />
                 </Form.Item>
               </Col>
               <Col xs={24}>
@@ -232,7 +328,7 @@ const DirectoryRegistration = () => {
                     { type: 'email', message: 'Please enter valid email address' }
                   ]}
                 >
-                  <Input placeholder="Enter your email address" className="form-control-custom" />
+                  <Input placeholder="Enter your email address" className="form-control-custom" autoComplete="email" />
                 </Form.Item>
               </Col>
             </Row>
@@ -253,7 +349,12 @@ const DirectoryRegistration = () => {
                   label={t('province')}
                   rules={[{ required: true, message: 'Please select your province' }]}
                 >
-                  <Select placeholder="Select province" className="form-control-custom">
+                <Select 
+                    placeholder="Select province" 
+                    className="form-control-custom"
+                    dropdownStyle={{ zIndex: 9999 }}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                  >
                     {provinces.map(province => (
                       <Option key={province} value={province}>{province}</Option>
                     ))}
@@ -266,7 +367,7 @@ const DirectoryRegistration = () => {
                   label={t('district')}
                   rules={[{ required: true, message: 'Please enter your district' }]}
                 >
-                  <Input placeholder="Enter your district" className="form-control-custom" />
+                  <Input placeholder="Enter your district" className="form-control-custom" autoComplete="address-level2" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -275,7 +376,7 @@ const DirectoryRegistration = () => {
                   label={t('tehsil')}
                   rules={[{ required: true, message: 'Please enter your tehsil' }]}
                 >
-                  <Input placeholder="Enter your tehsil" className="form-control-custom" />
+                  <Input placeholder="Enter your tehsil" className="form-control-custom" autoComplete="address-level3" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -283,7 +384,7 @@ const DirectoryRegistration = () => {
                   name="unionCouncil"
                   label={t('unionCouncil')}
                 >
-                  <Input placeholder="Enter your union council" className="form-control-custom" />
+                  <Input placeholder="Enter your union council" className="form-control-custom" autoComplete="address-level4" />
                 </Form.Item>
               </Col>
               <Col xs={24}>
@@ -296,6 +397,7 @@ const DirectoryRegistration = () => {
                     rows={4} 
                     placeholder="Enter your complete address" 
                     className="form-control-custom" 
+                    autoComplete="street-address"
                   />
                 </Form.Item>
               </Col>
@@ -316,7 +418,25 @@ const DirectoryRegistration = () => {
                   name="caste"
                   label={t('caste')}
                 >
-                  <Input placeholder="Enter your caste/baradari" className="form-control-custom" />
+                  <Input placeholder="Enter your caste/baradari" className="form-control-custom" autoComplete="off" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="maritalStatus"
+                  label="Marital Status"
+                  rules={[{ required: true, message: 'Please select your marital status' }]}
+                >
+                <Select 
+                    placeholder="Select marital status" 
+                    className="form-control-custom"
+                    dropdownStyle={{ zIndex: 9999 }}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                  >
+                    {maritalStatuses.map(status => (
+                      <Option key={status.value} value={status.value}>{status.label}</Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -325,9 +445,14 @@ const DirectoryRegistration = () => {
                   label={t('membershipType')}
                   rules={[{ required: true, message: 'Please select membership type' }]}
                 >
-                  <Select placeholder="Select membership type" className="form-control-custom">
+                <Select 
+                    placeholder="Select membership type" 
+                    className="form-control-custom"
+                    dropdownStyle={{ zIndex: 9999 }}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                  >
                     {membershipTypes.map(type => (
-                      <Option key={type} value={type}>{type}</Option>
+                      <Option key={type.value} value={type.value}>{type.label}</Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -373,14 +498,16 @@ const DirectoryRegistration = () => {
   };
 
   return (
-    <div className="directory-registration py-5">
-      <div className="container">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="text-center mb-5">
+    <div className="directory-registration">
+      <Header language={language} setLanguage={setLanguage} />
+      <div className="py-5" style={{ marginTop: '80px' }}>
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="text-center mb-5">
             <h1 className="display-4 fw-bold mb-3">Join Our Directory</h1>
             <p className="lead text-muted">
               Register with us to become part of our community and help make a difference
@@ -452,7 +579,9 @@ const DirectoryRegistration = () => {
             </Col>
           </Row>
         </motion.div>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 };

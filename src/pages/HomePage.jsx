@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import arain1Logo from '../assets/Arain (1).png';
 import { Row, Col, Card, Button, Carousel, Statistic } from 'antd';
 import { 
   BookOutlined, 
@@ -10,12 +11,17 @@ import {
   UserOutlined,
   TeamOutlined,
   ProjectOutlined,
-  TrophyOutlined
+  TrophyOutlined,
+  CrownOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
+  StarOutlined
 } from '@ant-design/icons';
 import { motion } from 'framer-motion';
-import APITest from '../components/APITest';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 
-const HomePage = () => {
+const HomePage = ({ language, setLanguage }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -76,6 +82,7 @@ const HomePage = () => {
 
   return (
     <div className="homepage">
+      <Header language={language} setLanguage={setLanguage} />
       {/* Hero Section */}
       <motion.section 
         className="hero-section"
@@ -123,7 +130,20 @@ const HomePage = () => {
                 transition={{ delay: 0.8, duration: 0.8 }}
                 className="text-center"
               >
-                <div style={{ fontSize: '200px', lineHeight: 1 }}>🌟</div>
+                <img 
+                  src={arain1Logo} 
+                  alt="Arain Association Logo" 
+                  style={{ 
+                    width: '300px', 
+                    height: '300px', 
+                    objectFit: 'contain',
+                    borderRadius: '20px',
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+                    transition: 'transform 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                />
               </motion.div>
             </Col>
           </Row>
@@ -163,12 +183,6 @@ const HomePage = () => {
         </div>
 </section>
 
-      {/* API Test Section */}
-      <section className="py-5">
-        <div className="container">
-          <APITest />
-        </div>
-      </section>
 
       {/* Features Section */}
       <section className="py-5 gradient-bg-light">
@@ -200,8 +214,209 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Leadership Section */}
       <section className="py-5 bg-white">
+        <div className="container">
+          <div className="text-center mb-5">
+            <h2 className="display-5 fw-bold mb-3">
+              <CrownOutlined className="me-3" style={{ color: '#003366' }} />
+              Leadership Team
+            </h2>
+            <p className="lead text-muted">Meet our dedicated leaders who guide our mission</p>
+          </div>
+          <Row gutter={[24, 24]} justify="center">
+            {[
+              { 
+                name: 'Ahmad Hassan', 
+                position: 'President', 
+                image: 'https://via.placeholder.com/200x200/003366/ffffff?text=AH',
+                description: 'Leading the organization with vision and dedication'
+              },
+              { 
+                name: 'Sara Ali', 
+                position: 'Chairman', 
+                image: 'https://via.placeholder.com/200x200/2ecc71/ffffff?text=SA',
+                description: 'Overseeing strategic initiatives and growth'
+              },
+              { 
+                name: 'Muhammad Khan', 
+                position: 'General Secretary', 
+                image: 'https://via.placeholder.com/200x200/003366/ffffff?text=MK',
+                description: 'Managing operations and community outreach'
+              },
+              { 
+                name: 'Fatima Sheikh', 
+                position: 'Finance Secretary', 
+                image: 'https://via.placeholder.com/200x200/2ecc71/ffffff?text=FS',
+                description: 'Overseeing financial management and transparency'
+              }
+            ].map((leader, idx) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={idx}>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1, duration: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="card-custom text-center h-100 p-4">
+                    <img 
+                      src={leader.image} 
+                      alt={leader.name} 
+                      style={{ 
+                        borderRadius: '50%', 
+                        width: '120px', 
+                        height: '120px', 
+                        objectFit: 'cover',
+                        margin: '0 auto 1rem'
+                      }} 
+                    />
+                    <h5 className="fw-bold mb-2">{leader.name}</h5>
+                    <p className="text-primary fw-semibold mb-2">{leader.position}</p>
+                    <p className="text-muted small">{leader.description}</p>
+                  </Card>
+                </motion.div>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      </section>
+
+      {/* Events Section */}
+      <section className="py-5 gradient-bg-light">
+        <div className="container">
+          <div className="text-center mb-5">
+            <h2 className="display-5 fw-bold mb-3">
+              <CalendarOutlined className="me-3" style={{ color: '#003366' }} />
+              Recent Events
+            </h2>
+            <p className="lead text-muted">Our impactful activities and community programs</p>
+          </div>
+          <Row gutter={[24, 24]} justify="center">
+            {[
+              { 
+                image: 'https://via.placeholder.com/350x250/003366/ffffff?text=Education+Camp', 
+                title: 'Education Awareness Camp',
+                date: 'March 2024',
+                description: 'Organized educational workshops for 200+ students'
+              },
+              { 
+                image: 'https://via.placeholder.com/350x250/2ecc71/ffffff?text=Health+Drive', 
+                title: 'Free Health Checkup Drive',
+                date: 'February 2024',
+                description: 'Conducted free medical checkups for 500+ families'
+              },
+              { 
+                image: 'https://via.placeholder.com/350x250/003366/ffffff?text=Welfare+Program', 
+                title: 'Community Welfare Program',
+                date: 'January 2024',
+                description: 'Distributed essential supplies to needy families'
+              }
+            ].map((event, idx) => (
+              <Col xs={24} sm={12} md={8} key={idx}>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1, duration: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="card-custom h-100 overflow-hidden">
+                    <img 
+                      src={event.image} 
+                      alt={event.title} 
+                      style={{ width: '100%', height: '200px', objectFit: 'cover' }} 
+                    />
+                    <div className="p-4">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h5 className="fw-bold mb-0">{event.title}</h5>
+                        <small className="text-muted">{event.date}</small>
+                      </div>
+                      <p className="text-muted mb-0">{event.description}</p>
+                    </div>
+                  </Card>
+                </motion.div>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      </section>
+
+      {/* Cities Section */}
+      <section className="py-5 bg-white">
+        <div className="container">
+          <div className="text-center mb-5">
+            <h2 className="display-5 fw-bold mb-3">
+              <EnvironmentOutlined className="me-3" style={{ color: '#003366' }} />
+              Our Presence
+            </h2>
+            <p className="lead text-muted">We are actively serving communities across Pakistan</p>
+          </div>
+          <Row gutter={[32, 32]} justify="center">
+            <Col xs={24} md={12} lg={10}>
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <Card className="card-custom text-center h-100 p-4">
+                  <div className="feature-icon mb-3" style={{ background: '#003366' }}>
+                    <EnvironmentOutlined style={{ fontSize: '24px', color: 'white' }} />
+                  </div>
+                  <h4 className="fw-bold mb-3">Active Cities</h4>
+                  <div className="text-start">
+                    {[
+                      'Lahore - Punjab',
+                      'Karachi - Sindh', 
+                      'Islamabad - Federal Capital',
+                      'Multan - Punjab',
+                      'Faisalabad - Punjab',
+                      'Rawalpindi - Punjab'
+                    ].map((city, idx) => (
+                      <div key={idx} className="d-flex align-items-center mb-2">
+                        <StarOutlined className="me-2" style={{ color: '#2ecc71' }} />
+                        <span style={{ fontSize: '1rem' }}>{city}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </motion.div>
+            </Col>
+            <Col xs={24} md={12} lg={10}>
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <Card className="card-custom text-center h-100 p-4">
+                  <div className="feature-icon mb-3" style={{ background: '#2ecc71' }}>
+                    <TeamOutlined style={{ fontSize: '24px', color: 'white' }} />
+                  </div>
+                  <h4 className="fw-bold mb-3">Working Bodies</h4>
+                  <div className="text-start">
+                    {[
+                      'Education Committee',
+                      'Health & Medical Committee',
+                      'Social Welfare Committee', 
+                      'Youth Development Committee',
+                      'Women Empowerment Committee',
+                      'Community Development Committee'
+                    ].map((body, idx) => (
+                      <div key={idx} className="d-flex align-items-center mb-2">
+                        <StarOutlined className="me-2" style={{ color: '#003366' }} />
+                        <span style={{ fontSize: '1rem' }}>{body}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </motion.div>
+            </Col>
+          </Row>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-5 gradient-bg-light">
         <div className="container">
           <div className="text-center mb-5">
             <h2 className="display-5 fw-bold mb-3">{t('testimonials')}</h2>
@@ -270,6 +485,7 @@ const HomePage = () => {
           </Row>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

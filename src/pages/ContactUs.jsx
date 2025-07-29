@@ -13,10 +13,12 @@ import {
 } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import { submitContactForm } from '../apiService';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 
 const { TextArea } = Input;
 
-const ContactUs = () => {
+const ContactUs = ({ language = 'en', setLanguage = () => {} }) => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
 
@@ -71,7 +73,9 @@ const ContactUs = () => {
   ];
 
   return (
-    <div className="contact-us py-5">
+    <div className="contact-us">
+      <Header language={language} setLanguage={setLanguage} />
+      <div className="py-5" style={{ marginTop: '80px' }}>
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -225,7 +229,9 @@ const ContactUs = () => {
                               background: social.color,
                               width: '45px',
                               height: '45px',
-                              fontSize: '20px'
+                              fontSize: '20px',
+                              border: '2px solid white',
+                              boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.3)'
                             }}
                           >
                             {social.icon}
@@ -314,6 +320,8 @@ const ContactUs = () => {
           </motion.div>
         </motion.div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 };

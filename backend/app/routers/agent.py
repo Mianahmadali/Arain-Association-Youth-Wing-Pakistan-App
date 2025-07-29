@@ -13,7 +13,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 agent_router = APIRouter()
-db = get_database()
 
 class AIAgent:
     def __init__(self):
@@ -195,7 +194,7 @@ ai_agent = AIAgent()
 
 @agent_router.post("/chat", response_model=ChatResponse, status_code=status.HTTP_200_OK)
 async def chat_with_ai(chat_message: ChatMessage):
-    """Chat with AI assistant"""
+    db = get_database()
     try:
         session_id = chat_message.session_id or str(uuid.uuid4())
         
@@ -238,7 +237,7 @@ async def get_conversations(
     limit: int = 50,
     current_user = Depends(get_current_admin_user)
 ):
-    """Get conversation history (Admin only)"""
+    db = get_database()
     try:
         query = {}
         if session_id:
@@ -261,7 +260,7 @@ async def get_conversations(
 
 @agent_router.get("/conversations/stats", response_model=APIResponse, status_code=status.HTTP_200_OK)
 async def get_conversation_stats(current_user = Depends(get_current_admin_user)):
-    """Get conversation statistics (Admin only)"""
+    db = get_database()
     try:
         total_conversations = await db.conversations.count_documents({})
         unique_sessions = len(await db.conversations.distinct("session_id"))

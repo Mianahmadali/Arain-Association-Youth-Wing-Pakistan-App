@@ -11,10 +11,9 @@ logger = logging.getLogger(__name__)
 
 contact_router = APIRouter()
 
-db = get_database()
-
 @contact_router.post("/", response_model=APIResponse, status_code=status.HTTP_201_CREATED)
 async def create_contact_message(contact_data: ContactCreate):
+    db = get_database()
     logger.info(f"Received contact data: {contact_data}")
     """Create a new contact message"""
     try:
@@ -43,6 +42,7 @@ async def list_contact_messages(
     is_read: Optional[bool] = Query(None),
     current_user = Depends(get_current_admin_user)
 ):
+    db = get_database()
     """Get all contact messages (Admin only)"""
     try:
         query = {}
@@ -53,10 +53,17 @@ async def list_contact_messages(
         total_messages = await db.contact_messages.count_documents(query)
         messages = await db.contact_messages.find(query).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
         
+        # Convert ObjectId to string for proper serialization
+        serialized_messages = []
+        for message in messages:
+            message_dict = dict(message)
+            message_dict['_id'] = str(message_dict['_id'])
+            serialized_messages.append(message_dict)
+        
         return PaginatedResponse(
             success=True,
             message="Contact messages retrieved successfully",
-            data=messages,
+            data=serialized_messages,
             total=total_messages,
             page=page,
             limit=limit,
@@ -71,6 +78,7 @@ async def list_contact_messages(
 
 @contact_router.get("/{message_id}", response_model=ContactResponse, status_code=status.HTTP_200_OK)
 async def get_contact_message(message_id: str, current_user = Depends(get_current_admin_user)):
+    db = get_database()
     """Get a specific contact message by ID (Admin only)"""
     try:
         message = await db.contact_messages.find_one({"_id": ObjectId(message_id)})
@@ -89,6 +97,7 @@ async def get_contact_message(message_id: str, current_user = Depends(get_curren
 
 @contact_router.patch("/{message_id}/read", response_model=APIResponse, status_code=status.HTTP_200_OK)
 async def mark_message_as_read(message_id: str, current_user = Depends(get_current_admin_user)):
+    db = get_database()
     """Mark a contact message as read (Admin only)"""
     try:
         result = await db.contact_messages.update_one(
@@ -112,6 +121,7 @@ async def mark_message_as_read(message_id: str, current_user = Depends(get_curre
 
 @contact_router.patch("/{message_id}/unread", response_model=APIResponse, status_code=status.HTTP_200_OK)
 async def mark_message_as_unread(message_id: str, current_user = Depends(get_current_admin_user)):
+    db = get_database()
     """Mark a contact message as unread (Admin only)"""
     try:
         result = await db.contact_messages.update_one(
@@ -135,6 +145,7 @@ async def mark_message_as_unread(message_id: str, current_user = Depends(get_cur
 
 @contact_router.delete("/{message_id}", response_model=APIResponse, status_code=status.HTTP_200_OK)
 async def delete_contact_message(message_id: str, current_user = Depends(get_current_admin_user)):
+    db = get_database()
     """Delete a contact message (Admin only)"""
     try:
         result = await db.contact_messages.delete_one({"_id": ObjectId(message_id)})
@@ -155,6 +166,7 @@ async def delete_contact_message(message_id: str, current_user = Depends(get_cur
 
 @contact_router.get("/stats/count", response_model=APIResponse, status_code=status.HTTP_200_OK)
 async def get_contact_stats(current_user = Depends(get_current_admin_user)):
+    db = get_database()
     """Get contact message statistics (Admin only)"""
     try:
         total_messages = await db.contact_messages.count_documents({})

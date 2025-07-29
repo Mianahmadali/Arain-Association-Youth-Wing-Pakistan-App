@@ -1,0 +1,275 @@
+.footer-wrapper {
+  background: var(--gradient-primary);
+  color: white;
+  margin-top: auto;
+}
+
+.footer-main {
+  padding: 4rem 0 2rem;
+}
+
+.footer-section {
+  height: 100%;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.footer-logo-text h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.footer-logo-text span {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.footer-description {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.social-btn {
+  width: 45px;
+  height: 45px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: transparent;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.social-btn:hover {
+  background: white;
+  border-color: white;
+  color: var(--social-color);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.footer-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--primary-green);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  text-align: left;
+}
+
+.footer-link:hover {
+  color: var(--primary-green);
+}
+
+.footer-services {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.service-item {
+  margin-bottom: 1.5rem;
+}
+
+.service-item h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.service-item p {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.contact-icon {
+  font-size: 1.2rem;
+  color: var(--primary-green);
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.contact-item div p {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.footer-bottom {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.copyright,
+.made-with-love {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.made-with-love {
+  text-align: right;
+}
+
+.heart-icon {
+  color: #e74c3c;
+  margin: 0 0.25rem;
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .footer-main {
+    padding: 3rem 0 1.5rem;
+  }
+
+  .footer-section {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-main {
+    padding: 2rem 0 1rem;
+  }
+
+  .footer-logo {
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .footer-description {
+    text-align: center;
+  }
+
+  .social-links {
+    justify-content: center;
+  }
+
+  .footer-title {
+    text-align: center;
+    width: 100%;
+  }
+
+  .footer-links,
+  .footer-services,
+  .contact-info {
+    text-align: center;
+  }
+
+  .contact-item {
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .made-with-love {
+    text-align: center;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-main {
+    padding: 1.5rem 0 1rem;
+  }
+
+  .footer-logo svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .footer-logo-text h3 {
+    font-size: 1.1rem;
+  }
+
+  .footer-logo-text span {
+    font-size: 0.8rem;
+  }
+
+  .social-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .footer-bottom {
+    padding: 1rem 0;
+  }
+
+  .copyright,
+  .made-with-love {
+    font-size: 0.8rem;
+  }
+}

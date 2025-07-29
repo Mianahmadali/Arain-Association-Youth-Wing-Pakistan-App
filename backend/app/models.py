@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field, validator
-from typing import Optional, List, Any
+from pydantic import BaseModel, EmailStr, Field, validator, computed_field
+from typing import Optional, List, Any, Dict, Union
 from datetime import datetime
 from bson import ObjectId
 from enum import Enum
@@ -59,6 +59,25 @@ class MembershipType(str, Enum):
     VOLUNTEER = "volunteer"
     DONOR = "donor"
 
+class Relation(str, Enum):
+    FATHER = "father"
+    MOTHER = "mother"
+    SON = "son"
+    DAUGHTER = "daughter"
+    BROTHER = "brother"
+    SISTER = "sister"
+    SPOUSE = "spouse"
+    GRANDFATHER = "grandfather"
+    GRANDMOTHER = "grandmother"
+    GRANDSON = "grandson"
+    GRANDDAUGHTER = "granddaughter"
+    UNCLE = "uncle"
+    AUNT = "aunt"
+    NEPHEW = "nephew"
+    NIECE = "niece"
+    COUSIN = "cousin"
+    OTHER = "other"
+
 # Directory Models
 class DirectoryCreate(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=100)
@@ -79,6 +98,7 @@ class DirectoryCreate(BaseModel):
     membership_type: MembershipType = Field(default=MembershipType.MEMBER)
     notes: Optional[str] = Field(None, max_length=500)
     profile_image: Optional[str] = None  # URL to uploaded image
+    family_members_count: Optional[int] = Field(default=1, ge=1, le=50)  # New field for number of family members
 
 class DirectoryResponse(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -100,6 +120,7 @@ class DirectoryResponse(BaseModel):
     membership_type: MembershipType
     notes: Optional[str]
     profile_image: Optional[str]
+    family_members_count: Optional[int]  # New field for number of family members
     created_at: datetime
     updated_at: datetime
     
@@ -122,6 +143,7 @@ class DirectoryUpdate(BaseModel):
     caste: Optional[str] = Field(None, min_length=2, max_length=50)
     marital_status: Optional[MaritalStatus] = None
     membership_type: Optional[MembershipType] = None
+    family_members_count: Optional[int] = Field(None, ge=1, le=50)  # New field for number of family members
     notes: Optional[str] = Field(None, max_length=500)
     profile_image: Optional[str] = None
 
@@ -219,6 +241,100 @@ class PaginatedResponse(BaseModel):
     limit: int
     total_pages: int
 
+# Family Member Model
+class FamilyMember(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    age: int = Field(..., ge=0, le=120)
+    gender: Gender
+    relation: Relation
+    cnic: Optional[str] = Field(None, pattern=r'^\d{5}-\d{7}-\d{1}$')
+    profession: Optional[str] = Field(None, max_length=100)
+    qualification: Optional[str] = Field(None, max_length=100)
+    phone: Optional[str] = Field(None, pattern=r'^\+92\d{10}$')
+    email: Optional[EmailStr] = None
+    blood_group: Optional[BloodGroup] = None
+    notes: Optional[str] = Field(None, max_length=500)
+
+# Family Directory Models
+class FamilyDirectoryCreate(BaseModel):
+    head_of_family_name: str = Field(..., min_length=2, max_length=100)
+    family_members: List[FamilyMember] = Field(..., min_items=1)
+    address: str = Field(..., min_length=10, max_length=200)
+    city: str = Field(..., min_length=2, max_length=50)
+    district: str = Field(..., min_length=2, max_length=50)
+    province: str = Field(..., min_length=2, max_length=50)
+    country: str = Field(default="Pakistan", max_length=50)
+    postal_code: Optional[str] = Field(None, max_length=10)
+    phone: str = Field(..., pattern=r'^\+92\d{10}$')
+    email: Optional[EmailStr] = None
+    caste: str = Field(..., min_length=2, max_length=50)  # Arain sub-caste
+    membership_type: MembershipType = Field(default=MembershipType.MEMBER)
+    notes: Optional[str] = Field(None, max_length=500)
+    family_photo: Optional[str] = None  # URL to uploaded image
+    
+    @computed_field
+    @property
+    def total_members(self) -> int:
+        return len(self.family_members)
+
+class FamilyDirectoryResponse(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    head_of_family_name: str
+    family_members: List[FamilyMember]
+    total_members: int
+    address: str
+    city: str
+    district: str
+    province: str
+    country: str
+    postal_code: Optional[str]
+    phone: str
+    email: Optional[EmailStr]
+    caste: str
+    membership_type: MembershipType
+    notes: Optional[str]
+    family_photo: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}
+
+class FamilyDirectoryUpdate(BaseModel):
+    head_of_family_name: Optional[str] = Field(None, min_length=2, max_length=100)
+    family_members: Optional[List[FamilyMember]] = None
+    address: Optional[str] = Field(None, min_length=10, max_length=200)
+    city: Optional[str] = Field(None, min_length=2, max_length=50)
+    district: Optional[str] = Field(None, min_length=2, max_length=50)
+    province: Optional[str] = Field(None, min_length=2, max_length=50)
+    postal_code: Optional[str] = Field(None, max_length=10)
+    phone: Optional[str] = Field(None, pattern=r'^\+92\d{10}$')
+    email: Optional[EmailStr] = None
+    caste: Optional[str] = Field(None, min_length=2, max_length=50)
+    membership_type: Optional[MembershipType] = None
+    notes: Optional[str] = Field(None, max_length=500)
+    family_photo: Optional[str] = None
+
+# Population Response Model
+class PopulationResponse(BaseModel):
+    total_population: int
+
+# Caste Statistics Model
+class CasteStats(BaseModel):
+    caste: str
+    family_count: int
+    total_members: int
+    percentage: float
+
+class CasteStatsResponse(BaseModel):
+    success: bool
+    message: str
+    data: List[CasteStats]
+    total_families: int
+    total_population: int
+
 # Filter Models
 class DirectoryFilter(BaseModel):
     city: Optional[str] = None
@@ -227,5 +343,16 @@ class DirectoryFilter(BaseModel):
     province: Optional[str] = None
     gender: Optional[Gender] = None
     membership_type: Optional[MembershipType] = None
+    page: int = Field(default=1, ge=1)
+    limit: int = Field(default=10, ge=1, le=100)
+    
+class FamilyDirectoryFilter(BaseModel):
+    city: Optional[str] = None
+    caste: Optional[str] = None
+    province: Optional[str] = None
+    district: Optional[str] = None
+    membership_type: Optional[MembershipType] = None
+    min_members: Optional[int] = Field(None, ge=1)
+    max_members: Optional[int] = Field(None, le=50)
     page: int = Field(default=1, ge=1)
     limit: int = Field(default=10, ge=1, le=100)

@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 auth_router = APIRouter()
 security = HTTPBearer()
 
-db = get_database()
-
 @auth_router.post("/register", response_model=APIResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserCreate):
     """Register a new user"""
@@ -40,6 +38,7 @@ async def register_user(user_data: UserCreate):
         user_dict['is_active'] = True
         user_dict['created_at'] = datetime.utcnow()
         
+        db = get_database()
         result = await db.users.insert_one(user_dict)
         
         return APIResponse(
@@ -120,6 +119,7 @@ async def update_current_user(
                 detail="No data provided for update"
             )
         
+        db = get_database()
         result = await db.users.update_one(
             {"_id": current_user.id},
             {"$set": update_data}
@@ -155,8 +155,13 @@ async def list_users(
     try:
         skip = (page - 1) * limit
         
+        db = get_database()
         total_users = await db.users.count_documents({})
         users = await db.users.find({}, {"password": 0}).skip(skip).limit(limit).to_list(length=limit)
+        
+        # Convert ObjectId to string for JSON serialization
+        for user in users:
+            user['_id'] = str(user['_id'])
         
         return APIResponse(
             success=True,
@@ -186,6 +191,7 @@ async def activate_user(
     try:
         from bson import ObjectId
         
+        db = get_database()
         result = await db.users.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": {"is_active": True}}
@@ -220,6 +226,7 @@ async def deactivate_user(
     try:
         from bson import ObjectId
         
+        db = get_database()
         result = await db.users.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": {"is_active": False}}
@@ -249,6 +256,7 @@ async def deactivate_user(
 async def get_auth_stats(current_user: UserResponse = Depends(get_current_admin_user)):
     """Get authentication statistics (Admin only)"""
     try:
+        db = get_database()
         total_users = await db.users.count_documents({})
         active_users = await db.users.count_documents({"is_active": True})
         admin_users = await db.users.count_documents({"role": UserRole.ADMIN})
